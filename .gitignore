@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+recipe_photos/
+photo/
+.env
