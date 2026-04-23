@@ -197,9 +197,6 @@ def serve_photo(file_id: str):
 
 @app.post("/api/photos/{slug}")
 async def upload_photo(slug: str, file: UploadFile = File(...)):
-    slugs = {_slug(r): r for r in _get_recipes()}
-    if slug not in slugs:
-        raise HTTPException(status_code=404, detail="レシピが見つかりません")
 
     ext = Path(file.filename).suffix.lower()
     if ext not in {".jpg", ".jpeg", ".png", ".webp", ".heic"}:
