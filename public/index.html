@@ -195,14 +195,12 @@ async function uploadFiles(slug, files) {
     }
     const data = await res.json();
     done++;
-    // グリッドにすぐ追加
-    appendPhoto(data.url, data.filename, slug);
+    appendPhoto(data.file_id, data.filename, slug);
   }
   status.textContent = `${done}枚 追加しました`;
   setTimeout(() => { status.textContent = ''; }, 2500);
   const rec = recipes.find(r => r.slug === slug);
   if (rec) { rec.photo_count += done; renderSidebar(); }
-  // "写真なし" メッセージを消す
   const empty = document.querySelector('.photo-grid .empty-msg');
   if (empty) empty.remove();
 }
@@ -216,20 +214,21 @@ async function loadPhotos(slug) {
     return;
   }
   grid.innerHTML = '';
-  photos.forEach(p => appendPhoto(p.url, p.filename, slug));
+  photos.forEach(p => appendPhoto(p.file_id, p.filename, slug));
 }
 
-function appendPhoto(url, filename, slug) {
+function appendPhoto(fileId, filename, slug) {
   const grid = document.getElementById('photoGrid');
+  const imgUrl = `${API}/api/photo/${fileId}`;
   const card = document.createElement('div');
   card.className = 'photo-card';
-  card.dataset.url = url;
-  card.innerHTML = `<img src="${url}" alt="${esc(filename)}" loading="lazy"><button class="del-btn" title="削除">✕</button>`;
-  card.querySelector('img').addEventListener('click', () => openLightbox(url));
+  card.dataset.fileId = fileId;
+  card.innerHTML = `<img src="${imgUrl}" alt="${esc(filename)}" loading="lazy"><button class="del-btn" title="削除">✕</button>`;
+  card.querySelector('img').addEventListener('click', () => openLightbox(imgUrl));
   card.querySelector('.del-btn').addEventListener('click', async e => {
     e.stopPropagation();
     if (!confirm(`"${filename}" を削除しますか？`)) return;
-    const res = await fetch(`${API}/api/photos`, { method: 'DELETE', headers: {'content-type':'application/json'}, body: JSON.stringify({ url }) });
+    const res = await fetch(`${API}/api/photos/${fileId}`, { method: 'DELETE' });
     if (res.ok) {
       card.remove();
       const rec = recipes.find(r => r.slug === slug);
